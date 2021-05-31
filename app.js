@@ -32,6 +32,28 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+
+app.use((req,res,next) => {
+  console.log(req.headers);
+  if(!req.headers.authorization){
+    let err = new Error('Unauthorized User');
+    res.setHeader('WWW-Authenticate','Basic');
+    err.status = 401;
+    return next(err);
+  }
+
+  let auth = Buffer.from(req.headers.authorization.split(' ')[1] , 'base64').toString().split(':')
+  if(auth[0] == "admin" && auth[1] == "password"){
+    next();
+  }else{
+    let err = new Error('Unauthorized User');
+    res.setHeader('WWW-Authenticate','Basic');
+    err.status = 401;
+    return next(err);
+  }
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
