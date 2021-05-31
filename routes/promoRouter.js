@@ -3,22 +3,30 @@ const bodyParser = require('body-parser');
 
 const promoRouter = express.Router();
 
+const Promotions = require('../models/promtions');
+
 promoRouter.use(bodyParser.json());
 
 promoRouter.route('/')
 
-.all((req,res,next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type','text/plain');
-    next();
-})
-
 .get((req,res,next) => {
-    res.end("Sending all details of all promtions");
+    Promotions.find({})
+    .then((promotions) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type','application/json');
+        res.json(promotions);
+    }, err => next(err))
+    .catch(err => console.log(err));
 })
 
 .post((req,res,next) => {
-    res.end("Adding details of promotion:\n Name:" + req.body.name + "\nDescription:" + req.body.description);
+    Promotions.create(req.body)
+    .then((promotion) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type','application/json');
+        res.json(promotion);
+    } , err => next(err))
+    .catch(err => console.log(err));
 })
 
 .put((req,res,next) => {
@@ -27,19 +35,31 @@ promoRouter.route('/')
 })
 
 .delete((req,res,next) => {
-    res.end("Deleting all promotions");
+    Promotions.remove({})
+    .then((resp) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type','application/json');
+        res.json(resp);
+    } , err => next(err))
+    .catch(err => console.log(err));
 });
 
 promoRouter.route('/:promosId')
 
-.all((req,res,next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type','text/plain');
-    next();
-})
-
 .get((req,res,next) => {
-    res.end("Sending details of promotion: " + req.params.promosId);
+    Promotions.findById(req.params.promosId)
+    .then((promo) => {
+        if(promo){
+            res.statusCode = 200;
+            res.setHeader('Content-Type','application/json');
+            res.json(promo);
+        }else{
+            let err = new Error('Promotion: ' + req.params.promosId + " not found");
+            err.status = 404;
+            return next(err);
+        }
+    } , err => next(err))
+    .catch(err => console.log(err))
 })
 
 .post((req,res,next) => {
@@ -48,11 +68,29 @@ promoRouter.route('/:promosId')
 })
 
 .put((req,res,next) => {
-    res.end("Updated Promotion: " + req.params.promosId + "\nName: " + req.body.name + "\nDescription: " + req.body.description);
+    Promotions.findByIdAndUpdate(req.params.promosId, {$set : req.body} , {new : true})
+    .then((promo) => {
+        if(promo){
+            res.statusCode = 200;
+            res.setHeader('Content-Type','application/json');
+            res.json(promo);
+        }else{
+            let err = new Error('Promotion: ' + req.params.promosId + " not found");
+            err.status = 404;
+            return next(err);
+        }
+    } , err => next(err))
+    .catch(err => console.log(err));
 })
 
 .delete((req,res,next) => {
-    res.end("Deleting promotion: " + req.params.promosId);
+    Promotions.findByIdAndDelete(req.params.promosId)
+    .then((resp) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type','application/json');
+        res.json(resp);
+    }, err => next(err))
+    .catch(err => console.log(err));
 });
 
 module.exports = promoRouter;

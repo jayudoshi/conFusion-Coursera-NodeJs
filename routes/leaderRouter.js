@@ -3,22 +3,30 @@ const bodyParser = require('body-parser');
 
 const leaderRouter = express.Router();
 
+const Leaders = require('../models/leaders');
+
 leaderRouter.use(bodyParser.json());
 
 leaderRouter.route('/')
 
-.all((req,res,next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type','text/plain');
-    next();
-})
-
 .get((req,res,next) => {
-    res.end("Sending all details of all leaders");
+    Leaders.find({})
+    .then((leaders) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type','application/json');
+        res.json(leaders);
+    } , err => next(err))
+    .catch(err => console.log(err));
 })
 
 .post((req,res,next) => {
-    res.end("Adding details of leaders:\n Name:" + req.body.name + "\nDescription:" + req.body.description);
+    Leaders.create(req.body)
+    .then(leader => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type','application/json');
+        res.json(leader);
+    } , err=> next(err))
+    .catch(err => console.log(err));
 })
 
 .put((req,res,next) => {
@@ -27,19 +35,31 @@ leaderRouter.route('/')
 })
 
 .delete((req,res,next) => {
-    res.end("Deleting all leaders");
+    Leaders.remove({})
+    .then((resp) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type','application/json');
+        res.json(resp);
+    } , err=> next(err))
+    .catch(err => console.log(err));
 });
 
 leaderRouter.route('/:leadersId')
 
-.all((req,res,next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type','text/plain');
-    next();
-})
-
 .get((req,res,next) => {
-    res.end("Sending details of leader: " + req.params.leadersId);
+    Leaders.findById(req.params.leadersId)
+    .then((leader) => {
+        if(leader){
+            res.statusCode = 200;
+            res.setHeader('Content-Type','application/json');
+            res.json(leader)
+        }else{
+            let err = new Error('Leader ' + req.params.leadersId + " not found");
+            err.status = 404;
+            return next(err);
+        }
+    } , err => next(err))
+    .catch(err => console.log(err));
 })
 
 .post((req,res,next) => {
@@ -48,11 +68,35 @@ leaderRouter.route('/:leadersId')
 })
 
 .put((req,res,next) => {
-    res.end("Updated Leader: " + req.params.leadersId + "\nName: " + req.body.name + "\nDescription: " + req.body.description);
+    Leaders.findByIdAndUpdate(req.params.leadersId, { $set : req.body} , {new : true})
+    .then((leader) => {
+        if(leader){
+            res.statusCode = 200;
+            res.setHeader('Content-Type','application/json');
+            res.json(leader)
+        }else{
+            let err = new Error('Leader ' + req.params.leadersId + " not found");
+            err.status = 404;
+            return next(err);
+        }
+    } , err => next(err))
+    .catch(err => console.log(err));
 })
 
 .delete((req,res,next) => {
-    res.end("Deleting leader: " + req.params.leadersId);
+    Leaders.findByIdAndDelete(req.params.leadersId)
+    .then((leader) => {
+        if(leader){
+            res.statusCode = 200;
+            res.setHeader('Content-Type','application/json');
+            res.json(leader)
+        }else{
+            let err = new Error('Leader ' + req.params.leadersId + " not found");
+            err.status = 404;
+            return next(err);
+        }
+    } , err => next(err))
+    .catch(err => console.log(err));
 });
 
 module.exports = leaderRouter;
