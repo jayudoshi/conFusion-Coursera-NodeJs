@@ -3,6 +3,8 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var session = require('express-session');
+var FileStore = require('session-file-store')(session);
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -31,28 +33,77 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
 
+app.use(session({
+  name: "session_id",
+  resave: false,
+  saveUninitialized: false,
+  secret:'Hello World !!!',
+  store: new FileStore()
+}))
 
 app.use((req,res,next) => {
-  console.log(req.headers);
-  if(!req.headers.authorization){
-    let err = new Error('Unauthorized User');
-    res.setHeader('WWW-Authenticate','Basic');
-    err.status = 401;
-    return next(err);
-  }
-
-  let auth = Buffer.from(req.headers.authorization.split(' ')[1] , 'base64').toString().split(':')
-  if(auth[0] == "admin" && auth[1] == "password"){
-    next();
+  if(!req.session.user){
+    if(!req.headers.authorization){
+      let err = new Error('Unauthorized Uers');
+      err.status = 401;
+      res.setHeader('WWW-Authenticate','Basic');
+      return next(err);
+    }else{
+      let auth = new Buffer.from(req.headers.authorization.split(' ')[1] , 'base64').toString().split(':');
+      if(auth[0] == "admin" && auth[1] == "password"){
+        req.session.user = auth[0];
+        next();
+      }else{
+        let err = new Error('Unauthorized User');
+        res.setHeader('WWW-Authenticate','Basic');
+        err.status = 401;
+        return next(err);
+      }
+    }
   }else{
-    let err = new Error('Unauthorized User');
-    res.setHeader('WWW-Authenticate','Basic');
-    err.status = 401;
-    return next(err);
+    if(req.session.user == "admin"){
+      next();
+    }else{
+      let err = new Error('Unauthorized User');
+      res.setHeader('WWW-Authenticate','Basic');
+      err.status = 401;
+      return next(err);
+    }
   }
-});
+})
+
+// app.use((req,res,next) => {
+//   console.log(req.headers);
+//   if(!req.signedCookies.user){
+//     if(!req.headers.authorization){
+//       let err = new Error('Unauthorized Uers');
+//       err.status = 401;
+//       res.setHeader('WWW-Authenticate','Basic');
+//       return next(err);
+//     }else{
+//       let auth = new Buffer.from(req.headers.authorization.split(' ')[1] , 'base64').toString().split(':');
+//       if(auth[0] == "admin" && auth[1] == "password"){
+//         res.cookie('user','admin',{signed:true});
+//         next();
+//       }else{
+//         let err = new Error('Unauthorized User');
+//         res.setHeader('WWW-Authenticate','Basic');
+//         err.status = 401;
+//         return next(err);
+//       }
+//     }
+//   }else{
+//     if(req.signedCookies.user == "admin"){
+//       next();
+//     }else{
+//       let err = new Error('Unauthorized User');
+//       res.setHeader('WWW-Authenticate','Basic');
+//       err.status = 401;
+//       return next(err);
+//     }
+//   }
+// });
 
 app.use(express.static(path.join(__dirname, 'public')));
 
