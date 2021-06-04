@@ -42,73 +42,30 @@ app.use(session({
   store: new FileStore()
 }))
 
-app.use((req,res,next) => {
-  if(!req.session.user){
-    if(!req.headers.authorization){
-      let err = new Error('Unauthorized Uers');
-      err.status = 401;
-      res.setHeader('WWW-Authenticate','Basic');
-      return next(err);
-    }else{
-      let auth = new Buffer.from(req.headers.authorization.split(' ')[1] , 'base64').toString().split(':');
-      if(auth[0] == "admin" && auth[1] == "password"){
-        req.session.user = auth[0];
-        next();
-      }else{
-        let err = new Error('Unauthorized User');
-        res.setHeader('WWW-Authenticate','Basic');
-        err.status = 401;
-        return next(err);
-      }
-    }
-  }else{
-    if(req.session.user == "admin"){
-      next();
-    }else{
-      let err = new Error('Unauthorized User');
-      res.setHeader('WWW-Authenticate','Basic');
-      err.status = 401;
-      return next(err);
-    }
-  }
-})
-
-// app.use((req,res,next) => {
-//   console.log(req.headers);
-//   if(!req.signedCookies.user){
-//     if(!req.headers.authorization){
-//       let err = new Error('Unauthorized Uers');
-//       err.status = 401;
-//       res.setHeader('WWW-Authenticate','Basic');
-//       return next(err);
-//     }else{
-//       let auth = new Buffer.from(req.headers.authorization.split(' ')[1] , 'base64').toString().split(':');
-//       if(auth[0] == "admin" && auth[1] == "password"){
-//         res.cookie('user','admin',{signed:true});
-//         next();
-//       }else{
-//         let err = new Error('Unauthorized User');
-//         res.setHeader('WWW-Authenticate','Basic');
-//         err.status = 401;
-//         return next(err);
-//       }
-//     }
-//   }else{
-//     if(req.signedCookies.user == "admin"){
-//       next();
-//     }else{
-//       let err = new Error('Unauthorized User');
-//       res.setHeader('WWW-Authenticate','Basic');
-//       err.status = 401;
-//       return next(err);
-//     }
-//   }
-// });
-
-app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+
+app.use((req,res,next) => {
+  if(!req.session.user){
+    let err = new Error('Unauthorized Uers');
+    err.status = 401;
+    next(err);
+  }
+  else{
+    if(req.session.user == "authenticated"){
+      next();
+    }else{
+      let err = new Error('Unauthorized User');
+      err.status = 401;
+      next(err);
+    }
+  }    
+})
+
+
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.use('/dishes',dishRouter);
 app.use('/leaders',leaderRouter);
 app.use('/promotions',promoRouter);
