@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const Dishes = require('../models/dishes')
+const {verifyUser} = require('../authenticate')
 
 const dishRouter = express.Router();
 
@@ -19,7 +20,7 @@ dishRouter.route('/')
     .catch(err => console.log(err));
 })
 
-.post((req,res,next) =>{
+.post( verifyUser ,(req,res,next) =>{
     Dishes.create(req.body)
     .then((dish) => {
         res.statusCode = 200;
@@ -29,12 +30,12 @@ dishRouter.route('/')
     .catch(err => console.log(err));
 })
 
-.put((req,res,next)=>{
+.put( verifyUser ,(req,res,next)=>{
     res.statusCode = 403;
     res.end("PUT request is not serviced");
 })
 
-.delete((req,res,next)=>{
+.delete( verifyUser ,(req,res,next)=>{
     Dishes.remove({})
     .then(resp => {
         res.statusCode = 200;
@@ -56,12 +57,12 @@ dishRouter.route('/:dishId')
     .catch((err) => console.log(err));
 })
 
-.post((req,res,next) => {
+.post( verifyUser ,(req,res,next) => {
     res.statusCode = 403;
     res.end("POST request is not serviced");
 })
 
-.put((req,res,next) => {
+.put( verifyUser ,(req,res,next) => {
     console.log(req.body)
     Dishes.findByIdAndUpdate(req.params.dishId,{ $set : req.body},{new:true})
     .then((dish)=>{
@@ -72,7 +73,7 @@ dishRouter.route('/:dishId')
     .catch(err => console.log(err))
 })
 
-.delete((req,res,next) => {
+.delete( verifyUser ,(req,res,next) => {
     Dishes.findByIdAndDelete(req.params.dishId)
     .then((resp) => {
         res.statusCode = 200;
@@ -100,7 +101,7 @@ dishRouter.route('/:dishId/comments')
     .catch(err => console.log(err))
 })
 
-.post((req,res,next) => {
+.post( verifyUser ,(req,res,next) => {
     Dishes.findById(req.params.dishId)
     .then((dish) => {
         if(dish){
@@ -120,12 +121,12 @@ dishRouter.route('/:dishId/comments')
     .catch(err => console.log(err))
 })
 
-.put((req,res,next) => {
+.put( verifyUser ,(req,res,next) => {
     res.statusCode = 403;
     res.end("PUT request is not serviced");
 })
 
-.delete((req,res,next) => {
+.delete( verifyUser ,(req,res,next) => {
     Dishes.findById(req.params.dishId)
     .then((dish) => {
         if(dish){
@@ -174,12 +175,12 @@ dishRouter.route('/:dishId/comments/:commentId')
     .catch(err => console.log(err));
 })
 
-.post((req,res,next) => {
+.post( verifyUser ,(req,res,next) => {
     res.statusCode = 403;
     res.end("POST request is not serviced");
 })
 
-.put((req,res,next) => {
+.put( verifyUser ,(req,res,next) => {
     Dishes.findById(req.params.dishId)
     .then((dish) => {
         if(dish){
@@ -210,7 +211,7 @@ dishRouter.route('/:dishId/comments/:commentId')
     .catch(err => console.log(err))
 })
 
-.delete((req,res,next) => {
+.delete( verifyUser ,(req,res,next) => {
     Dishes.findById(req.params.dishId)
     .then((dish) => {
         if(dish){

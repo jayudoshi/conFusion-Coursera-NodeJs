@@ -6,7 +6,7 @@ var logger = require('morgan');
 var session = require('express-session');
 var FileStore = require('session-file-store')(session);
 var passport = require('passport');
-require('./authenticate'); 
+var {MongoDB_URL} = require('./config')
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -15,7 +15,7 @@ var leaderRouter = require('./routes/leaderRouter')
 var promoRouter = require('./routes/promoRouter')
 
 const mongoose = require('mongoose');
-const url = "mongodb://localhost:27017/conFusion";
+const url = MongoDB_URL
 
 mongoose.connect(url , { useNewUrlParser: true , useUnifiedTopology: true , useCreateIndex: true , useFindAndModify: true})
 .then(()=>{
@@ -36,44 +36,35 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use(session({
-  name: "session_id",
-  resave: false,
-  saveUninitialized: false,
-  secret:'Hello World !!!',
-  store: new FileStore()
-}))
-
 app.use(passport.initialize());
-app.use(passport.session());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
-app.use((req,res,next) => {
-  console.log("User: " + JSON.stringify(req.user));
-  if(req.user){
-    next();
-  }else{
-    var err = new Error('You are not authenticated!');
-    err.status = 403;
-    next(err);
-  }
-  // if(!req.session.user){
-  //   let err = new Error('Unauthorized Uers');
-  //   err.status = 401;
-  //   next(err);
-  // }
-  // else{
-  //   if(req.session.user == "authenticated"){
-  //     next();
-  //   }else{
-  //     let err = new Error('Unauthorized User');
-  //     err.status = 401;
-  //     next(err);
-  //   }
-  // }    
-})
+// app.use((req,res,next) => {
+//   console.log("User: " + JSON.stringify(req.user));
+//   if(req.user){
+//     next();
+//   }else{
+//     var err = new Error('You are not authenticated!');
+//     err.status = 403;
+//     next(err);
+//   }
+//   if(!req.session.user){
+//     let err = new Error('Unauthorized Uers');
+//     err.status = 401;
+//     next(err);
+//   }
+//   else{
+//     if(req.session.user == "authenticated"){
+//       next();
+//     }else{
+//       let err = new Error('Unauthorized User');
+//       err.status = 401;
+//       next(err);
+//     }
+//   }    
+// })
 
 
 app.use(express.static(path.join(__dirname, 'public')));

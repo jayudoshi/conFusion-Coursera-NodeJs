@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var passport = require('passport');
 var Users = require('../models/users');
-
+var {getToken} = require('../authenticate');
 /* GET users listing. */
 router.get('/', function(req, res, next) {
   res.send('respond with a resource');
@@ -47,10 +47,11 @@ router.post('/signup' , (req,res,next) => {
   // .catch(err => next(err))
 })
 
-router.post('/login' , passport.authenticate('local') , (req,res,next) => {
+router.post('/login' , passport.authenticate('local',{session:false}) , (req,res,next) => {
+  const token = getToken({_id : req.user._id});
   res.statusCode = 200;
   res.setHeader('Content-Type', 'application/json');
-  res.json({success: true, status: 'You are successfully logged in!'});
+  res.json({success: true, token: token ,status: 'You are successfully logged in!'});
   // if(!req.session.user){
   //   if(!req.headers.authorization){
   //     let err = new Error('Unauthorized User!!');

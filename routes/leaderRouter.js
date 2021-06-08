@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+var {verifyUser} = require('../authenticate');
 
 const leaderRouter = express.Router();
 
@@ -19,7 +20,7 @@ leaderRouter.route('/')
     .catch(err => console.log(err));
 })
 
-.post((req,res,next) => {
+.post( verifyUser ,(req,res,next) => {
     Leaders.create(req.body)
     .then(leader => {
         res.statusCode = 200;
@@ -29,12 +30,12 @@ leaderRouter.route('/')
     .catch(err => console.log(err));
 })
 
-.put((req,res,next) => {
+.put( verifyUser ,(req,res,next) => {
     res.statusCode = 403;
     res.end("PUT request is not serviced");
 })
 
-.delete((req,res,next) => {
+.delete( verifyUser ,(req,res,next) => {
     Leaders.remove({})
     .then((resp) => {
         res.statusCode = 200;
@@ -62,12 +63,12 @@ leaderRouter.route('/:leadersId')
     .catch(err => console.log(err));
 })
 
-.post((req,res,next) => {
+.post( verifyUser ,(req,res,next) => {
     res.statusCode = 403;
     res.end("POST request is not serviced");
 })
 
-.put((req,res,next) => {
+.put( verifyUser ,(req,res,next) => {
     Leaders.findByIdAndUpdate(req.params.leadersId, { $set : req.body} , {new : true})
     .then((leader) => {
         if(leader){
@@ -83,7 +84,7 @@ leaderRouter.route('/:leadersId')
     .catch(err => console.log(err));
 })
 
-.delete((req,res,next) => {
+.delete( verifyUser ,(req,res,next) => {
     Leaders.findByIdAndDelete(req.params.leadersId)
     .then((leader) => {
         if(leader){
