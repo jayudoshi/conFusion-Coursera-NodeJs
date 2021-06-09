@@ -30,3 +30,13 @@ module.exports.jwtPassport = passport.use( new jwtStrategy( opts , (jwt_payload,
 }))
 
 module.exports.verifyUser = passport.authenticate('jwt',{session:false});
+
+module.exports.verifyAdmin = (req,res,next) => {
+    if(req.user.admin){
+        return next()
+    }else{
+        let err = new Error("You are not authenticated to perform operation")
+        err.status = 403;
+        return next(err);
+    }
+}

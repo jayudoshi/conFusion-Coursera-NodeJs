@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-var {verifyUser} = require('../authenticate');
+var {verifyUser,verifyAdmin} = require('../authenticate');
 const promoRouter = express.Router();
 
 const Promotions = require('../models/promtions');
@@ -19,7 +19,7 @@ promoRouter.route('/')
     .catch(err => console.log(err));
 })
 
-.post( verifyUser ,(req,res,next) => {
+.post( verifyUser , verifyAdmin ,(req,res,next) => {
     Promotions.create(req.body)
     .then((promotion) => {
         res.statusCode = 200;
@@ -29,12 +29,12 @@ promoRouter.route('/')
     .catch(err => console.log(err));
 })
 
-.put( verifyUser ,(req,res,next) => {
+.put( verifyUser , verifyAdmin ,(req,res,next) => {
     res.statusCode = 403;
     res.end("PUT request is not serviced");
 })
 
-.delete( verifyUser ,(req,res,next) => {
+.delete( verifyUser , verifyAdmin ,(req,res,next) => {
     Promotions.remove({})
     .then((resp) => {
         res.statusCode = 200;
@@ -62,12 +62,12 @@ promoRouter.route('/:promosId')
     .catch(err => console.log(err))
 })
 
-.post( verifyUser ,(req,res,next) => {
+.post( verifyUser , verifyAdmin ,(req,res,next) => {
     res.statusCode = 403;
     res.end("POST request is not serviced");
 })
 
-.put( verifyUser ,(req,res,next) => {
+.put( verifyUser , verifyAdmin ,(req,res,next) => {
     Promotions.findByIdAndUpdate(req.params.promosId, {$set : req.body} , {new : true})
     .then((promo) => {
         if(promo){
@@ -83,7 +83,7 @@ promoRouter.route('/:promosId')
     .catch(err => console.log(err));
 })
 
-.delete( verifyUser ,(req,res,next) => {
+.delete( verifyUser , verifyAdmin ,(req,res,next) => {
     Promotions.findByIdAndDelete(req.params.promosId)
     .then((resp) => {
         res.statusCode = 200;
