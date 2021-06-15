@@ -3,8 +3,10 @@ var router = express.Router();
 var passport = require('passport');
 var Users = require('../models/users');
 var {getToken, verifyUser , verifyAdmin} = require('../authenticate');
+const cors = require('./cors');
+
 /* GET users listing. */
-router.get('/', verifyUser , verifyAdmin ,function(req, res, next) {
+router.get('/', cors.corsWithOption , verifyUser , verifyAdmin ,function(req, res, next) {
   Users.find({})
   .then(users => {
     res.statusCode = 200;
@@ -14,7 +16,7 @@ router.get('/', verifyUser , verifyAdmin ,function(req, res, next) {
   .catch(err => console.log(err));
 });
 
-router.post('/signup' , (req,res,next) => {
+router.post('/signup' , cors.corsWithOption , (req,res,next) => {
 
   Users.register({username:req.body.username} , req.body.password , (err , user) => {
     if(err){
@@ -64,7 +66,7 @@ router.post('/signup' , (req,res,next) => {
   // .catch(err => next(err))
 })
 
-router.post('/login' , passport.authenticate('local',{session:false}) , (req,res,next) => {
+router.post('/login' , cors.corsWithOption , passport.authenticate('local',{session:false}) , (req,res,next) => {
   const token = getToken({_id : req.user._id});
   res.statusCode = 200;
   res.setHeader('Content-Type', 'application/json');
@@ -107,7 +109,7 @@ router.post('/login' , passport.authenticate('local',{session:false}) , (req,res
   // }
 })
 
-router.get('/logout' , (req,res,next) => {
+router.get('/logout', cors.corsWithOption , (req,res,next) => {
   if(req.user){
     req.session.destroy();
     res.clearCookie("session_id");
@@ -117,6 +119,13 @@ router.get('/logout' , (req,res,next) => {
     err.status = 403;
     return next(err);
   }
+})
+
+router.get('/facebook/token' , passport.authenticate('facebook-token' , {session:false}) , (req,res,next) => {
+  const token = getToken({_id : req.user._id});
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'application/json');
+  res.json({success: true, token: token ,status: 'You are successfully logged in!'});
 })
 
 module.exports = router;

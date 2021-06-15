@@ -1,8 +1,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const Dishes = require('../models/dishes')
-const {verifyUser, verifyAdmin} = require('../authenticate')
+const Dishes = require('../models/dishes');
+const {verifyUser, verifyAdmin} = require('../authenticate');
+
+const cors = require('./cors');
 
 const dishRouter = express.Router();
 
@@ -10,18 +12,23 @@ dishRouter.use(bodyParser.json())
 
 dishRouter.route('/')
 
-.get((req,res,next)=>{
+.options(cors.cors , (req,res,next) => {
+    res.sendStatus(200);
+})
+
+.get( cors.cors , (req,res,next)=>{
     Dishes.find({})
     .populate('comments.author')
     .then((dishes) => {
         res.statusCode = 200;
         res.setHeader('Content-Type','application/json');
         res.json(dishes);
+        // res.json({msg: 'This is CORS-enabled for an allowed domain.'})
     },err => next(err))
     .catch(err => console.log(err));
 })
 
-.post( verifyUser , verifyAdmin ,(req,res,next) =>{
+.post( cors.corsWithOption , verifyUser , verifyAdmin ,(req,res,next) =>{
     Dishes.create(req.body)
     .then((dish) => {
         res.statusCode = 200;
@@ -31,12 +38,12 @@ dishRouter.route('/')
     .catch(err => console.log(err));
 })
 
-.put( verifyUser , verifyAdmin ,(req,res,next)=>{
+.put( cors.corsWithOption , verifyUser , verifyAdmin ,(req,res,next)=>{
     res.statusCode = 403;
     res.end("PUT request is not serviced");
 })
 
-.delete( verifyUser , verifyAdmin ,(req,res,next)=>{
+.delete( cors.corsWithOption , verifyUser , verifyAdmin ,(req,res,next)=>{
     Dishes.remove({})
     .then(resp => {
         res.statusCode = 200;
@@ -48,7 +55,11 @@ dishRouter.route('/')
 
 dishRouter.route('/:dishId')
 
-.get((req,res,next) => {
+.options(cors.cors , (req,res,next) => { 
+    res.sendStatus(200); 
+})
+
+.get( cors.cors , (req,res,next) => {
     Dishes.findById(req.params.dishId)
     .populate('comments.author')
     .then((dish) => {
@@ -59,12 +70,12 @@ dishRouter.route('/:dishId')
     .catch((err) => console.log(err));
 })
 
-.post( verifyUser , verifyAdmin ,(req,res,next) => {
+.post( cors.corsWithOption , verifyUser , verifyAdmin ,(req,res,next) => {
     res.statusCode = 403;
     res.end("POST request is not serviced");
 })
 
-.put( verifyUser , verifyAdmin ,(req,res,next) => {
+.put( cors.corsWithOption , verifyUser , verifyAdmin ,(req,res,next) => {
     console.log(req.body)
     Dishes.findByIdAndUpdate(req.params.dishId,{ $set : req.body},{new:true})
     .then((dish)=>{
@@ -75,7 +86,7 @@ dishRouter.route('/:dishId')
     .catch(err => console.log(err))
 })
 
-.delete( verifyUser , verifyAdmin ,(req,res,next) => {
+.delete( cors.corsWithOption , verifyUser , verifyAdmin ,(req,res,next) => {
     Dishes.findByIdAndDelete(req.params.dishId)
     .then((resp) => {
         res.statusCode = 200;
@@ -87,7 +98,11 @@ dishRouter.route('/:dishId')
 
 dishRouter.route('/:dishId/comments')
 
-.get((req,res,next) => {
+.options(cors.cors , (req,res,next) => { 
+    res.sendStatus(200); 
+})
+
+.get( cors.cors , (req,res,next) => {
     Dishes.findById(req.params.dishId)
     .populate('comments.author')
     .then((dish) =>{
@@ -104,7 +119,7 @@ dishRouter.route('/:dishId/comments')
     .catch(err => console.log(err))
 })
 
-.post( verifyUser ,(req,res,next) => {
+.post( cors.corsWithOption , verifyUser ,(req,res,next) => {
     Dishes.findById(req.params.dishId)
     .then((dish) => {
         if(dish){
@@ -129,12 +144,12 @@ dishRouter.route('/:dishId/comments')
     .catch(err => console.log(err))
 })
 
-.put( verifyUser ,(req,res,next) => {
+.put( cors.corsWithOption , verifyUser ,(req,res,next) => {
     res.statusCode = 403;
     res.end("PUT request is not serviced");
 })
 
-.delete( verifyUser , verifyAdmin ,(req,res,next) => {
+.delete( cors.corsWithOption , verifyUser , verifyAdmin ,(req,res,next) => {
     Dishes.findById(req.params.dishId)
     .then((dish) => {
         if(dish){
@@ -161,7 +176,11 @@ dishRouter.route('/:dishId/comments')
 
 dishRouter.route('/:dishId/comments/:commentId')
 
-.get((req,res,next) => {
+.options(cors.cors , (req,res,next) => { 
+    res.sendStatus(200); 
+})
+
+.get(cors.cors , (req,res,next) => {
     Dishes.findById(req.params.dishId)
     .populate('comments.author')
     .then((dish) => {
@@ -184,12 +203,12 @@ dishRouter.route('/:dishId/comments/:commentId')
     .catch(err => console.log(err));
 })
 
-.post( verifyUser ,(req,res,next) => {
+.post( cors.corsWithOption , verifyUser ,(req,res,next) => {
     res.statusCode = 403;
     res.end("POST request is not serviced");
 })
 
-.put( verifyUser ,(req,res,next) => {
+.put( cors.corsWithOption , verifyUser ,(req,res,next) => {
     Dishes.findById(req.params.dishId)
     .then((dish) => {
         if(dish){
@@ -231,7 +250,7 @@ dishRouter.route('/:dishId/comments/:commentId')
     .catch(err => console.log(err))
 })
 
-.delete( verifyUser ,(req,res,next) => {
+.delete( cors.corsWithOption , verifyUser ,(req,res,next) => {
     Dishes.findById(req.params.dishId)
     .then((dish) => {
         if(dish){

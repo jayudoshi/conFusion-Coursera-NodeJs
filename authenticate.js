@@ -3,8 +3,9 @@ var localStrategy = require('passport-local').Strategy;
 var jwtStrategy = require('passport-jwt').Strategy;
 var extractJwt = require('passport-jwt').ExtractJwt;
 var jsonWebToken  = require('jsonwebtoken')
+var facebookStrategy = require('passport-facebook-token');
 
-var {SECRET_KEY} = require('./config')
+var {SECRET_KEY , FBClientId , FBClientSecret} = require('./config')
 
 var Users = require('./models/users');
 
@@ -40,3 +41,28 @@ module.exports.verifyAdmin = (req,res,next) => {
         return next(err);
     }
 }
+
+module.exports.facebookPassport = passport.use(new facebookStrategy({
+    clientID: FBClientId,
+    clientSecret: FBClientSecret
+} , (accessToken , refreshToken , profile , done) => {
+    Users.findOne({oAuthId : profile.id} , (err,user) => {
+        if(err){
+            done(err,false)
+        }else if(user){
+            done(null,user)
+        }else if(!user){
+            Users.create({
+                oAuthId: profile.id,
+                username: profile.displayName,
+                firstname: profile.name.givenName,
+                lastname: profile.name.familyName
+            } , (err , user) => {
+                if (err)
+                    return done(err, false);
+                else
+                    return done(null, user);
+            })
+        }
+    })
+}))

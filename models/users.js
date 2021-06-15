@@ -11,6 +11,9 @@ const userSchema = Schema({
         type: String,
         default: ''
     },
+    oAuthId: {
+        type: String
+    },
     admin:{
         type: Boolean,
         default: false

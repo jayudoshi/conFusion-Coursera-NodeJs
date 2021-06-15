@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 var {verifyUser,verifyAdmin} = require('../authenticate');
+const cors = require('./cors');
 
 const leaderRouter = express.Router();
 
@@ -10,7 +11,11 @@ leaderRouter.use(bodyParser.json());
 
 leaderRouter.route('/')
 
-.get((req,res,next) => {
+.options(cors.cors , (req,res,next) => { 
+    res.sendStatus(200); 
+})
+
+.get( cors.cors , (req,res,next) => {
     Leaders.find({})
     .then((leaders) => {
         res.statusCode = 200;
@@ -20,7 +25,7 @@ leaderRouter.route('/')
     .catch(err => console.log(err));
 })
 
-.post( verifyUser , verifyAdmin ,(req,res,next) => {
+.post( cors.corsWithOption , verifyUser , verifyAdmin ,(req,res,next) => {
     Leaders.create(req.body)
     .then(leader => {
         res.statusCode = 200;
@@ -30,12 +35,12 @@ leaderRouter.route('/')
     .catch(err => console.log(err));
 })
 
-.put( verifyUser , verifyAdmin ,(req,res,next) => {
+.put( cors.corsWithOption , verifyUser , verifyAdmin ,(req,res,next) => {
     res.statusCode = 403;
     res.end("PUT request is not serviced");
 })
 
-.delete( verifyUser , verifyAdmin ,(req,res,next) => {
+.delete( cors.corsWithOption , verifyUser , verifyAdmin ,(req,res,next) => {
     Leaders.remove({})
     .then((resp) => {
         res.statusCode = 200;
@@ -47,7 +52,11 @@ leaderRouter.route('/')
 
 leaderRouter.route('/:leadersId')
 
-.get((req,res,next) => {
+.options(cors.cors , (req,res,next) => { 
+    res.sendStatus(200); 
+})
+
+.get( cors.cors , (req,res,next) => {
     Leaders.findById(req.params.leadersId)
     .then((leader) => {
         if(leader){
@@ -63,12 +72,12 @@ leaderRouter.route('/:leadersId')
     .catch(err => console.log(err));
 })
 
-.post( verifyUser , verifyAdmin ,(req,res,next) => {
+.post( cors.corsWithOption , verifyUser , verifyAdmin ,(req,res,next) => {
     res.statusCode = 403;
     res.end("POST request is not serviced");
 })
 
-.put( verifyUser , verifyAdmin ,(req,res,next) => {
+.put( cors.corsWithOption , verifyUser , verifyAdmin ,(req,res,next) => {
     Leaders.findByIdAndUpdate(req.params.leadersId, { $set : req.body} , {new : true})
     .then((leader) => {
         if(leader){
@@ -84,7 +93,7 @@ leaderRouter.route('/:leadersId')
     .catch(err => console.log(err));
 })
 
-.delete( verifyUser , verifyAdmin ,(req,res,next) => {
+.delete( cors.corsWithOption , verifyUser , verifyAdmin ,(req,res,next) => {
     Leaders.findByIdAndDelete(req.params.leadersId)
     .then((leader) => {
         if(leader){
