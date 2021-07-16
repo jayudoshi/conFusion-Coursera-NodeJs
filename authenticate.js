@@ -10,7 +10,8 @@ var {SECRET_KEY , FBClientId , FBClientSecret} = require('./config')
 var Users = require('./models/users');
 
 module.exports.localPassport = passport.use(new localStrategy(Users.authenticate()));
-
+passport.serializeUser(Users.serializeUser());
+passport.deserializeUser(Users.deserializeUser());
 module.exports.getToken = (user) => jsonWebToken.sign(user,SECRET_KEY,{expiresIn:3600})
 
 const opts = {};
